@@ -229,7 +229,7 @@ export function FilterBar({
             alt=""
             className="h-7 w-7 shrink-0 rounded-full object-cover"
           />
-          <HeartPulseIcon className="h-7 w-7 shrink-0 text-rose-400" />
+          <HeartPulseIcon className="h-7 w-7 shrink-0 text-zinc-100" />
           <h1 className="text-zinc-100 text-base font-medium">heartbeat</h1>
         </button>
         <span className="text-xs text-zinc-600">
