@@ -234,23 +234,23 @@ export function FilterBar({
         <span className="text-xs text-zinc-600">
           by{' '}
           <a
-            href="https://njump.me/dergigi.com"
+            href="https://dergigi.com"
             target="_blank"
             rel="noreferrer noopener"
             className="hover:text-zinc-300 transition-colors"
-            title="Gigi on Nostr (@dergigi.com)"
+            title="dergigi.com"
           >
-            Gigi
+            gigi
           </a>
-          {' / '}
+          @
           <a
             href="https://github.com/OpenSats/heartbeat"
             target="_blank"
             rel="noreferrer noopener"
             className="hover:text-zinc-300 transition-colors"
-            title="Upstream: OpenSats heartbeat"
+            title="Upstream: OpenSats/heartbeat"
           >
-            OpenSats
+            opensats.org
           </a>
         </span>
       </div>
