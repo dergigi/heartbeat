@@ -224,12 +224,12 @@ export function FilterBar({
           title="reset all filters"
           aria-label="reset all filters"
         >
+          <HeartPulseIcon className="h-7 w-7 shrink-0 text-zinc-100" />
           <img
             src={HEADER_LOGO_URL}
             alt=""
             className="h-7 w-7 shrink-0 rounded-full object-cover"
           />
-          <HeartPulseIcon className="h-7 w-7 shrink-0 text-zinc-100" />
         </button>
         <span className="text-xs text-zinc-600">
           by{' '}
