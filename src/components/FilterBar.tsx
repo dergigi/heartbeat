@@ -39,6 +39,7 @@ type Props = {
   funds: Record<string, string[]>;
 
   fundFilter: FilterControl;
+  orgFilter: FilterControl;
   repoFilter: FilterControl;
   typeFilter: FilterControl;
   actorFilter: FilterControl;
@@ -100,6 +101,7 @@ export function FilterBar({
   repos,
   funds,
   fundFilter,
+  orgFilter,
   repoFilter,
   typeFilter,
   actorFilter,
@@ -115,18 +117,32 @@ export function FilterBar({
   const fundNames = useMemo(() => Object.keys(funds).sort(), [funds]);
   const has = (s: Set<string> | null, v: string) => s != null && s.has(v);
 
-  const filteredRepos = useMemo(() => {
-    let list = repos;
+  const reposAfterFund = useMemo(() => {
     const sel = fundFilter.selected;
-    if (sel && sel.size > 0) {
-      const allowed = new Set<string>();
-      for (const f of sel) for (const r of funds[f] ?? []) allowed.add(r);
-      list = list.filter((r) => allowed.has(r));
+    if (!sel || sel.size === 0) return repos;
+    const allowed = new Set<string>();
+    for (const f of sel) for (const r of funds[f] ?? []) allowed.add(r);
+    return repos.filter((r) => allowed.has(r));
+  }, [repos, funds, fundFilter.selected]);
+
+  const orgNames = useMemo(
+    () =>
+      [...new Set(reposAfterFund.map((r) => r.split('/')[0] ?? ''))].filter(Boolean).sort((a, b) =>
+        a.toLowerCase().localeCompare(b.toLowerCase()),
+      ),
+    [reposAfterFund],
+  );
+
+  const filteredRepos = useMemo(() => {
+    let list = reposAfterFund;
+    const osel = orgFilter.selected;
+    if (osel && osel.size > 0) {
+      list = list.filter((r) => osel.has(r.split('/')[0] ?? ''));
     }
     const q = deferredQuery.trim().toLowerCase();
     if (q) list = list.filter((r) => r.toLowerCase().includes(q));
     return list;
-  }, [repos, funds, fundFilter.selected, deferredQuery]);
+  }, [reposAfterFund, orgFilter.selected, deferredQuery]);
 
   const showRepoChips = reposExpanded || repoQuery.length > 0;
 
@@ -190,6 +206,7 @@ export function FilterBar({
 
   const clearAll = () => {
     fundFilter.clear();
+    orgFilter.clear();
     repoFilter.clear();
     typeFilter.clear();
     actorFilter.clear();
@@ -251,13 +268,23 @@ export function FilterBar({
 
       <div className="flex items-center gap-1.5">{filterRowContent}</div>
 
+      {orgNames.length > 0 && (
+        <ChipRow label="orgs:" onClear={clearIfActive(orgFilter)}>
+          {orgNames.map((o) => (
+            <Chip key={o} active={has(orgFilter.selected, o)} onClick={() => orgFilter.toggle(o)} title={o}>
+              {o}
+            </Chip>
+          ))}
+        </ChipRow>
+      )}
+
       <div className="space-y-2">
         <ChipRow label="repos:" onClear={repoClearIfActive}>
           {!repoQuery && (
             <Chip
               active={false}
               onClick={() => setReposExpanded((v) => !v)}
-              title={`${repos.length} repos`}
+              title={`${reposAfterFund.length} repos`}
             >
               {reposExpanded ? 'hide' : repoToggleLabel}
             </Chip>

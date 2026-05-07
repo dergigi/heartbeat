@@ -10,6 +10,7 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
 
   const fundFilter = useUrlSet('funds');
+  const orgFilter = useUrlSet('orgs');
   const repoFilter = useUrlSet('repos');
   const typeFilter = useUrlSet('types');
   const actorFilter = useUrlSet('devs');
@@ -46,14 +47,27 @@ export function App() {
   const filtered = useMemo(() => {
     if (!data) return [];
     const inSet = (s: Set<string> | null, v: string) => !s || s.size === 0 || s.has(v);
+    const inOrg = (s: Set<string> | null, repo: string) => {
+      if (!s || s.size === 0) return true;
+      const owner = repo.split('/')[0] ?? '';
+      return s.has(owner);
+    };
     return data.events.filter(
       (e) =>
         (!fundReposUnion || fundReposUnion.has(e.repo)) &&
+        inOrg(orgFilter.selected, e.repo) &&
         inSet(repoFilter.selected, e.repo) &&
         inSet(typeFilter.selected, e.type) &&
         inSet(actorFilter.selected, e.actor),
     );
-  }, [data, fundReposUnion, repoFilter.selected, typeFilter.selected, actorFilter.selected]);
+  }, [
+    data,
+    fundReposUnion,
+    orgFilter.selected,
+    repoFilter.selected,
+    typeFilter.selected,
+    actorFilter.selected,
+  ]);
 
   const { set: setRepoSelection } = repoFilter;
   const { set: setActorSelection } = actorFilter;
@@ -111,6 +125,7 @@ export function App() {
           repos={data.repos}
           funds={data.funds}
           fundFilter={fundFilter}
+          orgFilter={orgFilter}
           repoFilter={repoFilter}
           typeFilter={typeFilter}
           actorFilter={actorFilter}
