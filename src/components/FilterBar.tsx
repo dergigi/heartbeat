@@ -207,7 +207,7 @@ export function FilterBar({
         </a>
       </div>
 
-      {fundNames.length > 0 && (
+      {fundNames.length > 1 && (
         <ChipRow label="fund:" onClear={clearIfActive(fundFilter)}>
           {fundNames.map((f) => (
             <Chip key={f} active={has(fundFilter.selected, f)} onClick={() => fundFilter.toggle(f)}>
