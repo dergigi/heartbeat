@@ -124,17 +124,6 @@ export function App() {
         <div>
           last fetched {generatedLabel} - window {data.windowDays}d - {data.repos.length} repo(s)
         </div>
-        <div>
-          repo missing?{' '}
-          <a
-            href="https://github.com/dergigi/heartbeat"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="text-zinc-500 hover:text-zinc-300 transition-colors"
-          >
-            create a PR
-          </a>
-        </div>
       </footer>
     </div>
   );
