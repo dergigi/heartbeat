@@ -12,6 +12,8 @@ const CHIP_ACTIVE = 'border-zinc-500 bg-zinc-800 text-zinc-100';
 const CHIP_FOCUS_ACTIVE = 'focus:border-zinc-500 focus:bg-zinc-800 focus:text-zinc-100';
 const ROW_LABEL = 'text-zinc-600 text-xs shrink-0 w-14';
 
+const HEADER_LOGO_URL = 'https://dergigi.com/assets/images/avatar.jpg';
+
 const chipClass = (active: boolean) =>
   active ? `${CHIP_BASE} ${CHIP_ACTIVE}` : `${CHIP_BASE} ${CHIP_IDLE} ${CHIP_HOVER}`;
 
@@ -169,8 +171,6 @@ export function FilterBar({
     </>
   );
 
-  const markUrl = `${import.meta.env.BASE_URL}opensats-mark.svg`;
-
   const clearAll = () => {
     fundFilter.clear();
     repoFilter.clear();
@@ -191,9 +191,9 @@ export function FilterBar({
           aria-label="reset all filters"
         >
           <img
-            src={markUrl}
+            src={HEADER_LOGO_URL}
             alt=""
-            className="h-7 w-7 shrink-0 filter-[brightness(0)_invert(1)]"
+            className="h-7 w-7 shrink-0 rounded-full object-cover"
           />
           <h1 className="text-zinc-100 text-base font-medium">heartbeat</h1>
         </button>
