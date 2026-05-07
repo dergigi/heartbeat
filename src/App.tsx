@@ -127,7 +127,7 @@ export function App() {
         <div>
           repo missing?{' '}
           <a
-            href="https://github.com/OpenSats/heartbeat"
+            href="https://github.com/dergigi/heartbeat"
             target="_blank"
             rel="noreferrer noopener"
             className="text-zinc-500 hover:text-zinc-300 transition-colors"

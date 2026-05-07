@@ -198,12 +198,13 @@ export function FilterBar({
           <h1 className="text-zinc-100 text-base font-medium">heartbeat</h1>
         </button>
         <a
-          href="https://opensats.org"
+          href="https://njump.me/dergigi.com"
           target="_blank"
           rel="noreferrer noopener"
           className="text-zinc-600 hover:text-zinc-300 text-xs transition-colors"
+          title="Gigi on Nostr (@dergigi.com)"
         >
-          by OpenSats
+          by Gigi
         </a>
       </div>
 
