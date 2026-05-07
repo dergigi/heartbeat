@@ -197,15 +197,28 @@ export function FilterBar({
           />
           <h1 className="text-zinc-100 text-base font-medium">heartbeat</h1>
         </button>
-        <a
-          href="https://njump.me/dergigi.com"
-          target="_blank"
-          rel="noreferrer noopener"
-          className="text-zinc-600 hover:text-zinc-300 text-xs transition-colors"
-          title="Gigi on Nostr (@dergigi.com)"
-        >
-          by Gigi
-        </a>
+        <span className="text-xs text-zinc-600">
+          by{' '}
+          <a
+            href="https://njump.me/dergigi.com"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:text-zinc-300 transition-colors"
+            title="Gigi on Nostr (@dergigi.com)"
+          >
+            Gigi
+          </a>
+          {' / '}
+          <a
+            href="https://github.com/OpenSats/heartbeat"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="hover:text-zinc-300 transition-colors"
+            title="Upstream: OpenSats heartbeat"
+          >
+            OpenSats
+          </a>
+        </span>
       </div>
 
       {fundNames.length > 1 && (
