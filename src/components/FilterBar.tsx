@@ -109,6 +109,7 @@ export function FilterBar({
   const selectedActors = actorFilter.selected;
   const [repoQuery, setRepoQuery] = useUrlString('q');
   const [reposExpanded, setReposExpanded] = useState(false);
+  const [orgsExpanded, setOrgsExpanded] = useState(false);
   // The deferred query lets the input update at urgent priority while
   // the (heavier) filtered chip list and downstream effects re-render
   // at low priority. Keeps typing snappy on big repo lists.
@@ -145,6 +146,10 @@ export function FilterBar({
   }, [reposAfterFund, orgFilter.selected, deferredQuery]);
 
   const showRepoChips = reposExpanded || repoQuery.length > 0;
+  const selectedOrgCount = orgFilter.selected?.size ?? 0;
+  const orgToggleLabel =
+    selectedOrgCount > 0 ? `${selectedOrgCount} selected` : `show all ${orgNames.length}`;
+  const showOrgChips = orgsExpanded;
 
   // Typing in the filter auto-selects matching repos; clearing the
   // input drops the param so the timeline returns to all repos. We
@@ -182,6 +187,7 @@ export function FilterBar({
     ));
   };
 
+  const orgClearIfActive = clearIfActive(orgFilter);
   const repoClearIfActive = clearIfActive(repoFilter);
   const selectedRepoCount = repoFilter.selected?.size ?? 0;
   const repoToggleLabel =
@@ -212,6 +218,7 @@ export function FilterBar({
     actorFilter.clear();
     setRepoQuery('');
     setReposExpanded(false);
+    setOrgsExpanded(false);
   };
 
   return (
@@ -268,13 +275,31 @@ export function FilterBar({
       <div className="flex items-center gap-1.5">{filterRowContent}</div>
 
       {orgNames.length > 0 && (
-        <ChipRow label="orgs:" onClear={clearIfActive(orgFilter)}>
-          {orgNames.map((o) => (
-            <Chip key={o} active={has(orgFilter.selected, o)} onClick={() => orgFilter.toggle(o)} title={o}>
-              {o}
+        <div className="space-y-2">
+          <ChipRow label="orgs:" onClear={orgClearIfActive}>
+            <Chip
+              active={false}
+              onClick={() => setOrgsExpanded((v) => !v)}
+              title={`${orgNames.length} organizations`}
+            >
+              {orgsExpanded ? 'hide' : orgToggleLabel}
             </Chip>
-          ))}
-        </ChipRow>
+          </ChipRow>
+          {showOrgChips && (
+            <div className="flex flex-wrap items-center gap-1.5 sm:max-h-[40vh] sm:overflow-y-auto">
+              {orgNames.map((o) => (
+                <Chip
+                  key={o}
+                  active={has(orgFilter.selected, o)}
+                  onClick={() => orgFilter.toggle(o)}
+                  title={o}
+                >
+                  {o}
+                </Chip>
+              ))}
+            </div>
+          )}
+        </div>
       )}
 
       <div className="space-y-2">
