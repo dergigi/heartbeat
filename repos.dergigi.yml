@@ -1,7 +1,9 @@
-# Public GitHub repos owned by @dergigi (see users/dergigi/repos, private=false).
-# Regenerate: gh api "users/dergigi/repos?per_page=100&type=owner" --paginate \
+# Personal public repos (owner @dergigi) plus every public repo in orgs you belong to when
+# include_all_org_repos is true. Uses GET /user/orgs and GET /orgs/{org}/repos?type=public.
+# Regenerate personal list: gh api "users/dergigi/repos?per_page=100&type=owner" --paginate \
 #   -q '.[] | select(.private == false) | "  - " + .full_name' | sort -f
 fund: dergigi
+include_all_org_repos: true
 repos:
   - dergigi/21lessons-book
   - dergigi/ancient-wisdom-nostr-bot

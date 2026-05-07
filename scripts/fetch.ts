@@ -6,6 +6,7 @@ import yaml from 'js-yaml';
 import {
   ConfigSchema,
   DatasetSchema,
+  type Config,
   type Dataset,
   type Event,
   type EventType,
@@ -253,24 +254,99 @@ function fundFromFilename(file: string): string {
   return m ? m[1].toLowerCase() : 'general';
 }
 
-async function loadConfig(): Promise<LoadedConfig> {
+const GITHUB_HEADERS = {
+  Accept: 'application/vnd.github+json',
+  'X-GitHub-Api-Version': '2022-11-28',
+} as const;
+
+async function githubJson<T>(token: string, pathAndQuery: string): Promise<T> {
+  const res = await fetch(`https://api.github.com${pathAndQuery}`, {
+    headers: { ...GITHUB_HEADERS, Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`GitHub ${pathAndQuery}: ${res.status} ${body.slice(0, 200)}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+/** Every public `owner/name` under orgs from GET /user/orgs (GET /orgs/{org}/repos?type=public). */
+async function listAllOrgRepos(token: string): Promise<string[]> {
+  type Org = { login: string };
+  type Repo = { full_name: string };
+  const orgs: Org[] = [];
+  let orgPage = 1;
+  while (true) {
+    const chunk = await githubJson<Org[]>(token, `/user/orgs?per_page=100&page=${orgPage}`);
+    if (chunk.length === 0) break;
+    orgs.push(...chunk);
+    if (chunk.length < 100) break;
+    orgPage++;
+  }
+
+  const names = new Set<string>();
+  for (const { login: org } of orgs) {
+    let repoPage = 1;
+    while (true) {
+      const repos = await githubJson<Repo[]>(
+        token,
+        `/orgs/${encodeURIComponent(org)}/repos?per_page=100&page=${repoPage}&type=public&sort=full_name`,
+      );
+      if (repos.length === 0) break;
+      for (const r of repos) names.add(r.full_name);
+      if (repos.length < 100) break;
+      repoPage++;
+    }
+  }
+  return [...names].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+}
+
+async function loadConfig(token: string): Promise<LoadedConfig> {
   const files = (await readdir(ROOT)).filter((f) => CONFIG_FILE_PATTERN.test(f)).sort();
   if (files.length === 0) {
     throw new Error('No repos.yml or repos.<group>.yml files found at the project root.');
   }
-  const all = new Set<string>();
-  const funds: Record<string, Set<string>> = {};
+  const parsedFiles: { file: string; parsed: Config }[] = [];
+  let anyOrgExpand = false;
   for (const file of files) {
     const raw = await readFile(resolve(ROOT, file), 'utf8');
     const parsed = ConfigSchema.parse(yaml.load(raw));
+    parsedFiles.push({ file, parsed });
+    if (parsed.include_all_org_repos) anyOrgExpand = true;
+  }
+
+  let orgRepos: string[] = [];
+  if (anyOrgExpand) {
+    console.log('  (listing public repos from your GitHub organizations...)');
+    orgRepos = await listAllOrgRepos(token);
+    console.log(`  -> ${orgRepos.length} org repo(s) total`);
+  }
+
+  const all = new Set<string>();
+  const funds: Record<string, Set<string>> = {};
+  for (const { file, parsed } of parsedFiles) {
     const fundName = parsed.fund ?? fundFromFilename(file);
-    console.log(`  ${file}: ${parsed.repos.length} repos -> "${fundName}"`);
+    const extra = parsed.include_all_org_repos ? orgRepos.length : 0;
+    console.log(
+      `  ${file}: ${parsed.repos.length} repos${extra ? ` + ${extra} from orgs` : ''} -> "${fundName}"`,
+    );
     const bucket = (funds[fundName] ??= new Set<string>());
     for (const r of parsed.repos) {
       all.add(r);
       bucket.add(r);
     }
+    if (parsed.include_all_org_repos) {
+      for (const r of orgRepos) {
+        all.add(r);
+        bucket.add(r);
+      }
+    }
   }
+
+  if (all.size === 0) {
+    throw new Error('No repositories to fetch: add repos in repos*.yml or enable include_all_org_repos.');
+  }
+
   return {
     repos: [...all].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())),
     funds: Object.fromEntries(
@@ -315,8 +391,8 @@ async function fetchRepo(client: typeof graphql, ownerName: string): Promise<Eve
 }
 
 async function main() {
-  const config = await loadConfig();
   const token = getToken();
+  const config = await loadConfig(token);
   const client = graphql.defaults({ headers: { authorization: `token ${token}` } });
   const cutoff = Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
